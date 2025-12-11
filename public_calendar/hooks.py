@@ -77,16 +77,19 @@ app_include_css = ["/assets/public_calendar/css/public_calendar.css"]
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "public_calendar.utils.jinja_methods",
-# 	"filters": "public_calendar.utils.jinja_filters"
-# }
+jinja = {
+	"methods": [
+		"public_calendar.public_calendar.notifications.rsvp_confirm_url",
+		"public_calendar.public_calendar.notifications.rsvp_decline_url",
+		"public_calendar.public_calendar.notifications.rsvp_cancel_url",
+	],
+}
 
 # Installation
 # ------------
 
 # before_install = "public_calendar.install.before_install"
-# after_install = "public_calendar.install.after_install"
+after_install = "public_calendar.install.after_install"
 
 # Uninstallation
 # ------------
@@ -140,13 +143,12 @@ app_include_css = ["/assets/public_calendar/css/public_calendar.css"]
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Event": {
+		"on_update": "public_calendar.public_calendar.overrides.event.on_update",
+		"on_trash": "public_calendar.public_calendar.overrides.event.on_trash",
+	}
+}
 
 # Scheduled Tasks
 # ---------------

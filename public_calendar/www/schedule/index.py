@@ -5,7 +5,9 @@ import frappe
 from frappe import _
 from frappe.query_builder import DocType
 from frappe.query_builder.functions import Coalesce
-from pypika import Case
+from frappe.utils import get_system_timezone
+
+from public_calendar.public_calendar.notifications import notify_booking
 
 
 def get_context(context):
@@ -44,6 +46,7 @@ def get_context(context):
 		context.parents = [{"name": _("Home"), "route": "/"}]
 
 	context.schedulable_calendars = schedulable
+	context.timezone = get_system_timezone()
 	context.no_cache = 1
 
 
@@ -67,7 +70,6 @@ def get_events(start: str, end: str, public_calendar: str):
 			Event.starts_on,
 			Event.ends_on,
 			Event.all_day,
-			Case().when(Event.event_type == "Public", Event.subject).else_("").as_("subject"),
 			PublicCalendar.busy_text,
 		)
 		.where(
@@ -75,7 +77,7 @@ def get_events(start: str, end: str, public_calendar: str):
 			& (Coalesce(Event.ends_on, Event.starts_on) >= start)
 			& (PublicCalendar.allow_booking == 1)
 			& (PublicCalendar.name == public_calendar)
-			# & (EventParticipant.status != "Declined")
+			& (Event.status != "Cancelled")
 		)
 		.distinct()
 	)
@@ -96,8 +98,6 @@ def book_appointment(
 	if not calendar.allow_booking:
 		frappe.throw(_("Booking is not enabled for this calendar"))
 
-	# TODO: validate against working_hours, min_notice, max_advance, conflicts
-
 	event = frappe.get_doc(
 		{
 			"doctype": "Event",
@@ -105,23 +105,72 @@ def book_appointment(
 			"description": description,
 			"starts_on": starts_on,
 			"ends_on": ends_on,
-			"event_type": "Private",
+			"event_type": "Public",
+			"reference_type": "Public Calendar",
+			"reference_name": public_calendar,
 		}
 	)
+
 	event.append(
 		"event_participants",
 		{
 			"reference_doctype": "User",
 			"reference_docname": calendar.user,
+			"rsvp": "Pending",
 		},
 	)
+
 	event.append(
 		"event_participants",
 		{
 			"reference_doctype": "User",
 			"reference_docname": frappe.session.user,
+			"rsvp": "Accepted",
 		},
 	)
+
+	guest_email = frappe.db.get_value("User", frappe.session.user, "email")
+	if guest_email:
+		linked_parties = get_contact_links(guest_email)
+		for party in linked_parties:
+			event.append(
+				"event_participants",
+				{
+					"reference_doctype": party["link_doctype"],
+					"reference_docname": party["link_name"],
+				},
+			)
+
 	event.insert(ignore_permissions=True)
+	notify_booking(event, calendar)
 
 	return event.name
+
+
+def get_contact_links(email: str) -> list[dict]:
+	"""
+	Get linked parties (Customer, Supplier, Lead, etc.) for a Contact by email.
+
+	Returns list of dicts with link_doctype and link_name.
+	"""
+	# Find Contact with this email
+	contact_name = frappe.db.get_value(
+		"Contact Email",
+		{"email_id": email, "parenttype": "Contact"},
+		"parent",
+	)
+
+	if not contact_name:
+		return []
+
+	# Get all dynamic links from this Contact
+	links = frappe.get_all(
+		"Dynamic Link",
+		filters={
+			"parent": contact_name,
+			"parenttype": "Contact",
+		},
+		fields=["link_doctype", "link_name"],
+	)
+
+	return links

@@ -10,6 +10,7 @@ from frappe.model.document import Document
 class PublicCalendar(Document):
 	def validate(self):
 		self.validate_working_hours()
+		self.share_with_host()
 
 	def validate_working_hours(self):
 		if not self.working_hours:
@@ -43,3 +44,34 @@ class PublicCalendar(Document):
 							next_block.get("end"),
 						)
 					)
+
+	def share_with_host(self):
+		"""Share document with the host user for read/write access."""
+		if not self.user:
+			return
+
+		# Check if already shared with this user
+		existing = frappe.db.exists(
+			"DocShare",
+			{
+				"share_doctype": self.doctype,
+				"share_name": self.name,
+				"user": self.user,
+			},
+		)
+
+		if not existing:
+			frappe.share.add(
+				self.doctype,
+				self.name,
+				user=self.user,
+				read=1,
+				write=1,
+				share=0,
+			)
+
+		# If user changed, remove share from old user
+		if self.has_value_changed("user") and self.get_doc_before_save():
+			old_user = self.get_doc_before_save().user
+			if old_user and old_user != self.user:
+				frappe.share.remove(self.doctype, self.name, old_user)

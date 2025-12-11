@@ -16,6 +16,7 @@
 			</option>
 			{% endfor %}
 		</select>
+		<span class="calendar-timezone-label text-muted" style="margin-left: 1rem;">{{ timezone }}</span>
 	</div>
 	<div id="public-calendar-wrapper" data-calendar="{{ selected_calendar or '' }}"
 		data-method="public_calendar.www.calendar.index.get_events">

@@ -5,6 +5,7 @@
 	"doctype": "DocType",
 	"engine": "InnoDB",
 	"field_order": [
+		"configuration_tab",
 		"enabled",
 		"is_public",
 		"allow_booking",
@@ -24,7 +25,21 @@
 		"booking_dialog_title",
 		"section_break_katw",
 		"working_hours_editor",
-		"working_hours"
+		"working_hours",
+		"notifications_tab",
+		"notify_host_on_booking",
+		"notify_guest_on_booking",
+		"notify_on_cancellation",
+		"column_break_kjxq",
+		"send_reminder",
+		"reminder_minutes_before",
+		"templates_section",
+		"host_booking_template",
+		"booker_booking_template",
+		"reschedule_template",
+		"column_break_hzvc",
+		"cancellation_template",
+		"reminder_template"
 	],
 	"fields": [
 		{
@@ -133,12 +148,94 @@
 			"fieldname": "booking_dialog_title",
 			"fieldtype": "Data",
 			"label": "Booking Dialog Title"
+		},
+		{
+			"fieldname": "notifications_tab",
+			"fieldtype": "Tab Break",
+			"label": "Notifications"
+		},
+		{
+			"default": "0",
+			"fieldname": "notify_on_cancellation",
+			"fieldtype": "Check",
+			"label": "Notify On Cancellation"
+		},
+		{
+			"fieldname": "column_break_kjxq",
+			"fieldtype": "Column Break"
+		},
+		{
+			"default": "0",
+			"fieldname": "send_reminder",
+			"fieldtype": "Check",
+			"label": "Send Reminder"
+		},
+		{
+			"fieldname": "reminder_minutes_before",
+			"fieldtype": "Int",
+			"label": "Reminder Minutes Before"
+		},
+		{
+			"fieldname": "templates_section",
+			"fieldtype": "Section Break",
+			"label": "Templates"
+		},
+		{
+			"fieldname": "booker_booking_template",
+			"fieldtype": "Link",
+			"label": "Booker Booking Template",
+			"options": "Email Template"
+		},
+		{
+			"fieldname": "column_break_hzvc",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "cancellation_template",
+			"fieldtype": "Link",
+			"label": "Cancellation Template",
+			"options": "Email Template"
+		},
+		{
+			"fieldname": "reminder_template",
+			"fieldtype": "Link",
+			"label": "Reminder Template",
+			"options": "Email Template"
+		},
+		{
+			"fieldname": "configuration_tab",
+			"fieldtype": "Tab Break",
+			"label": "Configuration"
+		},
+		{
+			"fieldname": "host_booking_template",
+			"fieldtype": "Link",
+			"label": "Host Booking Template",
+			"options": "Email Template"
+		},
+		{
+			"default": "0",
+			"fieldname": "notify_host_on_booking",
+			"fieldtype": "Check",
+			"label": "Notify Host on Booking"
+		},
+		{
+			"default": "0",
+			"fieldname": "notify_guest_on_booking",
+			"fieldtype": "Check",
+			"label": "Notify Guest on Booking"
+		},
+		{
+			"fieldname": "reschedule_template",
+			"fieldtype": "Link",
+			"label": "Reschedule Template",
+			"options": "Email Template"
 		}
 	],
 	"grid_page_length": 50,
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2025-12-10 17:14:40.853928",
+	"modified": "2025-12-11 12:14:12.437342",
 	"modified_by": "Administrator",
 	"module": "Public Calendar",
 	"name": "Public Calendar",

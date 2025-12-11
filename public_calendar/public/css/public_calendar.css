@@ -297,3 +297,12 @@
 	margin-bottom: 0.5rem;
 	font-size: 2rem;
 }
+
+.calendar-timezone {
+	font-size: 0.875rem;
+	margin-bottom: 1rem;
+}
+
+.calendar-timezone-label {
+	font-size: 0.875rem;
+}

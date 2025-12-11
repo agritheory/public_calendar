@@ -5,6 +5,7 @@ import frappe
 from frappe import _
 from frappe.query_builder import DocType
 from frappe.query_builder.functions import Coalesce
+from frappe.utils import get_system_timezone
 
 
 def get_context(context):
@@ -28,6 +29,7 @@ def get_context(context):
 		context.selected_calendar = None
 
 	context.public_calendars = public_calendars
+	context.timezone = get_system_timezone()
 	context.no_cache = 1
 
 
@@ -59,6 +61,7 @@ def get_events(start: str, end: str, public_calendar: str | None = None):
 			(Event.starts_on <= end)
 			& (Coalesce(Event.ends_on, Event.starts_on) >= start)
 			& (PublicCalendar.is_public == 1)
+			& (Event.status != "Cancelled")
 		)
 		.distinct()
 	)
@@ -66,4 +69,4 @@ def get_events(start: str, end: str, public_calendar: str | None = None):
 	if public_calendar:
 		query = query.where(PublicCalendar.name == public_calendar)
 
-	return query.run(as_dict=True, debug=True)
+	return query.run(as_dict=True)
