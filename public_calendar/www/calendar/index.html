@@ -1,0 +1,30 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+{% block style %}
+<link rel="stylesheet" href="/assets/frappe/js/lib/fullcalendar/fullcalendar.min.css">
+<link rel="stylesheet" href="/assets/public_calendar/css/public_calendar.css">
+{% endblock %}
+<div class="public-calendar-container">
+	<div class="calendar-toolbar">
+		<select id="calendar-select" class="form-control input-sm">
+			<option value="">{{ _("All Calendars") }}</option>
+			{% for cal in public_calendars %}
+			<option value="{{ cal.name }}" data-route="{{ cal.route }}" {% if selected_calendar==cal.name %}selected{% endif
+				%}>
+				{{ cal.title or cal.name }}
+			</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div id="public-calendar-wrapper" data-calendar="{{ selected_calendar or '' }}"
+		data-method="public_calendar.www.calendar.index.get_events">
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+	frappe.require('assets/public_calendar/js/public_calendar.bundle.js');
+</script>
+{% endblock %}

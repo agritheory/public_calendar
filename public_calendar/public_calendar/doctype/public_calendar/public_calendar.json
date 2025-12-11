@@ -1,0 +1,165 @@
+{
+	"actions": [],
+	"allow_rename": 1,
+	"creation": "2025-12-10 14:55:59.590645",
+	"doctype": "DocType",
+	"engine": "InnoDB",
+	"field_order": [
+		"enabled",
+		"is_public",
+		"allow_booking",
+		"title",
+		"column_break_zyik",
+		"user",
+		"holiday_list",
+		"route",
+		"section_break_mmqo",
+		"buffer_time",
+		"slot_duration",
+		"busy_text",
+		"column_break_qyye",
+		"max_meeting_duration",
+		"min_notice_hours",
+		"max_advance_days",
+		"booking_dialog_title",
+		"section_break_katw",
+		"working_hours_editor",
+		"working_hours"
+	],
+	"fields": [
+		{
+			"fieldname": "user",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "User",
+			"options": "User",
+			"reqd": 1
+		},
+		{
+			"fieldname": "holiday_list",
+			"fieldtype": "Link",
+			"label": "Holiday List",
+			"options": "Holiday List"
+		},
+		{
+			"fieldname": "slot_duration",
+			"fieldtype": "Int",
+			"label": "Slot Duration"
+		},
+		{
+			"fieldname": "buffer_time",
+			"fieldtype": "Int",
+			"label": "Buffer Time"
+		},
+		{
+			"fieldname": "min_notice_hours",
+			"fieldtype": "Int",
+			"label": "Min Notice Hours"
+		},
+		{
+			"fieldname": "max_advance_days",
+			"fieldtype": "Int",
+			"label": "Max Advance Days"
+		},
+		{
+			"fieldname": "route",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Route",
+			"reqd": 1
+		},
+		{
+			"default": "0",
+			"fieldname": "is_public",
+			"fieldtype": "Check",
+			"label": "Is Public"
+		},
+		{
+			"default": "0",
+			"fieldname": "allow_booking",
+			"fieldtype": "Check",
+			"label": "Allow Booking"
+		},
+		{
+			"default": "1",
+			"fieldname": "enabled",
+			"fieldtype": "Check",
+			"label": "Enabled"
+		},
+		{
+			"fieldname": "working_hours",
+			"fieldtype": "JSON",
+			"hidden": 1
+		},
+		{
+			"fieldname": "working_hours_editor",
+			"fieldtype": "HTML",
+			"label": "Working Hours"
+		},
+		{
+			"fieldname": "column_break_zyik",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "section_break_mmqo",
+			"fieldtype": "Section Break"
+		},
+		{
+			"fieldname": "column_break_qyye",
+			"fieldtype": "Column Break"
+		},
+		{
+			"fieldname": "section_break_katw",
+			"fieldtype": "Section Break"
+		},
+		{
+			"fieldname": "title",
+			"fieldtype": "Data",
+			"in_list_view": 1,
+			"label": "Title",
+			"reqd": 1
+		},
+		{
+			"fieldname": "busy_text",
+			"fieldtype": "Data",
+			"label": "Busy Text"
+		},
+		{
+			"fieldname": "max_meeting_duration",
+			"fieldtype": "Int",
+			"label": "Max Meeting Duration"
+		},
+		{
+			"fieldname": "booking_dialog_title",
+			"fieldtype": "Data",
+			"label": "Booking Dialog Title"
+		}
+	],
+	"grid_page_length": 50,
+	"index_web_pages_for_search": 1,
+	"links": [],
+	"modified": "2025-12-10 17:14:40.853928",
+	"modified_by": "Administrator",
+	"module": "Public Calendar",
+	"name": "Public Calendar",
+	"owner": "Administrator",
+	"permissions": [
+		{
+			"create": 1,
+			"delete": 1,
+			"email": 1,
+			"export": 1,
+			"print": 1,
+			"read": 1,
+			"report": 1,
+			"role": "System Manager",
+			"share": 1,
+			"write": 1
+		}
+	],
+	"row_format": "Dynamic",
+	"rows_threshold_for_grid_search": 20,
+	"sort_field": "modified",
+	"sort_order": "DESC",
+	"states": []
+}

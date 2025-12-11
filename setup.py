@@ -1,4 +1,8 @@
 # Copyright (c) 2025, AgriTheory and contributors
 # For license information, please see license.txt
 
-__version__ = "15.0.0"
+from setuptools import setup
+
+name = "public_calendar"
+
+setup()

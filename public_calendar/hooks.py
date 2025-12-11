@@ -1,3 +1,6 @@
+# Copyright (c) 2025, AgriTheory and contributors
+# For license information, please see license.txt
+
 app_name = "public_calendar"
 app_title = "Public Calendar"
 app_publisher = "AgriTheory"
@@ -25,7 +28,7 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/public_calendar/css/public_calendar.css"
+app_include_css = ["/assets/public_calendar/css/public_calendar.css"]
 # app_include_js = "/assets/public_calendar/js/public_calendar.js"
 
 # include js, css files in header of web template
@@ -246,4 +249,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
