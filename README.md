@@ -22,9 +22,7 @@ bench use {{ site name }}
 Download apps
 ```shell
 bench get-app erpnext --branch version-15
-bench get-app payments --branch version-15
-bench get-app webshop --branch version-15
-bench get-app public_calendar --branch version-15 git@github.com:agritheory/public_calendar.git 
+bench get-app public_calendar --branch version-15 https://github.com/agritheory/public_calendar.git 
 ```
 
 Install the apps to your site
