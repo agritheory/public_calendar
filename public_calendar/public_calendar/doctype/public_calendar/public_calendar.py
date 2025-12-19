@@ -10,6 +10,8 @@ from frappe.model.document import Document
 class PublicCalendar(Document):
 	def validate(self):
 		self.validate_working_hours()
+
+	def after_insert(self):
 		self.share_with_host()
 
 	def validate_working_hours(self):

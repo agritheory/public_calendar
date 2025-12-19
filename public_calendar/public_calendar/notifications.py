@@ -4,9 +4,10 @@
 """
 Notification utilities for Public Calendar.
 
-Handles email notifications with ICS attachments for bookings,
-cancellations, and reminders. Includes HMAC-based token generation
-for secure guest RSVP actions.
+Handles notifications via Frappe's Notification DocType for bookings,
+cancellations, and reminders. Supports multiple channels (Email, Slack,
+System Notification, SMS). Includes HMAC-based token generation for
+secure guest RSVP actions.
 
 Terminology:
 - Host: The user linked in Public Calendar.user field (whose calendar is being booked)
@@ -119,226 +120,21 @@ def get_host_and_guests(
 	return host, guests
 
 
-def send_booking_notification(
-	event: "frappe.Document",
-	public_calendar: "frappe.Document",
-	recipient: str,
-	recipient_name: str | None = None,
-	is_host: bool = False,
-) -> None:
-	"""
-	Send booking confirmation email with ICS attachment.
-
-	Args:
-	        event: The booked Event document
-	        public_calendar: The Public Calendar document
-	        recipient: Email address to send to
-	        recipient_name: Display name of recipient
-	        is_host: True if recipient is the calendar's user (host)
-	"""
-	host, guests = get_host_and_guests(event, public_calendar)
-
-	if not host:
-		frappe.log_error(
-			f"Could not identify host for event {event.name}",
-			"Public Calendar Notification Error",
-		)
-		return
-
-	# Build attendee list for ICS
-	attendees = [
-		{
-			"email": host["email"],
-			"name": host["full_name"],
-			"status": "ACCEPTED",
-			"rsvp": False,
-		},
-	]
-	for guest in guests:
-		attendees.append(
-			{
-				"email": guest["email"],
-				"name": guest["full_name"],
-				"status": "NEEDS-ACTION",
-				"rsvp": True,
-			}
-		)
-
-	# Generate ICS attachment (sequence 0 for new booking)
-	ics_attachment = generate_ics_attachment(
-		event=event,
-		method="REQUEST",
-		organizer_email=host["email"],
-		organizer_name=host["full_name"],
-		attendees=attendees,
-		sequence=0,
-	)
-
-	# Build template context
-	context = _build_email_context(event, public_calendar, host, guests)
-	context["is_host"] = is_host
-
-	# Add RSVP links
-	context["confirm_url"] = get_rsvp_url(event.name, recipient, "confirm")
-	context["decline_url"] = get_rsvp_url(event.name, recipient, "decline")
-	context["cancel_url"] = get_rsvp_url(event.name, recipient, "cancel")
-
-	# Get template
-	template_field = "host_booking_template" if is_host else "guest_booking_template"
-	template_name = public_calendar.get(template_field) or "Public Calendar - Booking Confirmation"
-
-	_send_templated_email(
-		recipient=recipient,
-		template_name=template_name,
-		context=context,
-		attachments=[ics_attachment],
-		reference_doctype="Event",
-		reference_name=event.name,
-	)
-
-
-def send_cancellation_notification(
-	event: "frappe.Document",
-	public_calendar: "frappe.Document",
-	recipient: str,
-	cancelled_by: str,
-) -> None:
-	"""Send cancellation email with ICS CANCEL attachment."""
-	host, guests = get_host_and_guests(event, public_calendar)
-
-	if not host:
-		return
-
-	# Build attendee list for cancellation
-	attendees = [
-		{"email": host["email"], "name": host["full_name"], "status": "CANCELLED", "rsvp": False},
-	]
-	for guest in guests:
-		attendees.append(
-			{
-				"email": guest["email"],
-				"name": guest["full_name"],
-				"status": "CANCELLED",
-				"rsvp": False,
-			}
-		)
-
-	# Generate cancellation ICS (sequence 1 for cancellation)
-	ics_attachment = generate_ics_attachment(
-		event=event,
-		method="CANCEL",
-		organizer_email=host["email"],
-		organizer_name=host["full_name"],
-		attendees=attendees,
-		sequence=1,
-	)
-
-	context = _build_email_context(event, public_calendar, host, guests)
-	context["cancelled_by"] = cancelled_by
-
-	template_name = public_calendar.get("cancellation_template") or "Public Calendar - Cancellation"
-
-	_send_templated_email(
-		recipient=recipient,
-		template_name=template_name,
-		context=context,
-		attachments=[ics_attachment],
-		reference_doctype="Event",
-		reference_name=event.name,
-	)
-
-
-def send_reminder(
-	event: "frappe.Document",
-	public_calendar: "frappe.Document",
-	recipient: str,
-) -> None:
-	"""Send reminder email for upcoming appointment."""
-	host, guests = get_host_and_guests(event, public_calendar)
-
-	if not host:
-		return
-
-	context = _build_email_context(event, public_calendar, host, guests)
-	context["cancel_url"] = get_rsvp_url(event.name, recipient, "cancel")
-
-	template_name = public_calendar.get("reminder_template") or "Public Calendar - Reminder"
-
-	_send_templated_email(
-		recipient=recipient,
-		template_name=template_name,
-		context=context,
-		reference_doctype="Event",
-		reference_name=event.name,
-	)
-
-
-def send_reschedule_notification(
-	event: "frappe.Document",
-	public_calendar: "frappe.Document",
-	recipient: str,
-	rescheduled_by: str,
-) -> None:
-	"""Send reschedule email with updated ICS attachment."""
-	host, guests = get_host_and_guests(event, public_calendar)
-
-	if not host:
-		return
-
-	# Build attendee list
-	attendees = [
-		{"email": host["email"], "name": host["full_name"], "status": "ACCEPTED", "rsvp": False},
-	]
-	for guest in guests:
-		attendees.append(
-			{
-				"email": guest["email"],
-				"name": guest["full_name"],
-				"status": "NEEDS-ACTION",
-				"rsvp": True,
-			}
-		)
-
-	# Generate updated ICS (sequence 1 for update)
-	ics_attachment = generate_ics_attachment(
-		event=event,
-		method="REQUEST",
-		organizer_email=host["email"],
-		organizer_name=host["full_name"],
-		attendees=attendees,
-		sequence=1,
-	)
-
-	context = _build_email_context(event, public_calendar, host, guests)
-	context["rescheduled_by"] = rescheduled_by
-	context["confirm_url"] = get_rsvp_url(event.name, recipient, "confirm")
-	context["decline_url"] = get_rsvp_url(event.name, recipient, "decline")
-	context["cancel_url"] = get_rsvp_url(event.name, recipient, "cancel")
-
-	template_name = public_calendar.get("reschedule_template") or "Public Calendar - Reschedule"
-
-	_send_templated_email(
-		recipient=recipient,
-		template_name=template_name,
-		context=context,
-		attachments=[ics_attachment],
-		reference_doctype="Event",
-		reference_name=event.name,
-	)
-
-
-def _build_email_context(
+def _build_notification_context(
 	event: "frappe.Document",
 	public_calendar: "frappe.Document",
 	host: dict,
 	guests: list[dict],
+	recipient_email: str,
 ) -> dict:
-	"""Build common context dict for email templates."""
+	"""Build context dict for notification templates."""
 	starts_on = get_datetime(event.starts_on)
 	ends_on = get_datetime(event.ends_on) if event.ends_on else None
 
 	# For backwards compatibility and simpler templates, expose first guest as primary
 	primary_guest = guests[0] if guests else {}
+
+	is_host = recipient_email == host.get("email")
 
 	return {
 		"event": event,
@@ -361,41 +157,207 @@ def _build_email_context(
 		"guest_email": primary_guest.get("email"),
 		# All guests (for advanced templates)
 		"guests": guests,
+		# Recipient context
+		"is_host": is_host,
+		"recipient_email": recipient_email,
+		# RSVP URLs
+		"confirm_url": get_rsvp_url(event.name, recipient_email, "confirm"),
+		"decline_url": get_rsvp_url(event.name, recipient_email, "decline"),
+		"cancel_url": get_rsvp_url(event.name, recipient_email, "cancel"),
 		"site_url": get_url(),
 	}
 
 
-def _send_templated_email(
-	recipient: str,
-	template_name: str,
+def _get_ics_attachment_for_email(
+	event: "frappe.Document",
+	host: dict,
+	guests: list[dict],
+	method: Literal["REQUEST", "CANCEL"] = "REQUEST",
+	sequence: int = 0,
+) -> dict:
+	"""Generate ICS attachment for email notifications."""
+	attendees = [
+		{
+			"email": host["email"],
+			"name": host["full_name"],
+			"status": "ACCEPTED" if method == "REQUEST" else "CANCELLED",
+			"rsvp": False,
+		},
+	]
+	for guest in guests:
+		attendees.append(
+			{
+				"email": guest["email"],
+				"name": guest["full_name"],
+				"status": "NEEDS-ACTION" if method == "REQUEST" else "CANCELLED",
+				"rsvp": method == "REQUEST",
+			}
+		)
+
+	return generate_ics_attachment(
+		event=event,
+		method=method,
+		organizer_email=host["email"],
+		organizer_name=host["full_name"],
+		attendees=attendees,
+		sequence=sequence,
+	)
+
+
+def _send_notification(
+	notification_name: str,
+	event: "frappe.Document",
 	context: dict,
 	attachments: list | None = None,
-	reference_doctype: str | None = None,
-	reference_name: str | None = None,
 ) -> None:
-	"""Send an email using a Frappe Email Template."""
-	if not frappe.db.exists("Email Template", template_name):
+	"""
+	Send a notification using Frappe's Notification DocType.
+
+	For email channel notifications, ICS attachments are included.
+	Other channels (Slack, System, SMS) receive the notification without attachments.
+	"""
+	if not frappe.db.exists("Notification", notification_name):
 		frappe.log_error(
-			f"Email template '{template_name}' not found",
+			f"Notification '{notification_name}' not found",
 			"Public Calendar Notification Error",
 		)
 		return
 
-	template = frappe.get_doc("Email Template", template_name)
+	notification = frappe.get_doc("Notification", notification_name)
 
-	# Render subject and message
-	subject = frappe.render_template(template.subject, context)
-	message = frappe.render_template(template.response, context)
+	if notification.channel == "Email":
+		# For email, we send manually to include ICS attachments
+		recipient = context.get("recipient_email")
+		if not recipient:
+			return
 
-	frappe.sendmail(
-		recipients=[recipient],
-		subject=subject,
-		message=message,
-		attachments=attachments,
-		reference_doctype=reference_doctype,
-		reference_name=reference_name,
-		now=True,
+		# Render subject and message from notification template
+		subject = frappe.render_template(notification.subject, context)
+		message = frappe.render_template(notification.message, context)
+
+		frappe.sendmail(
+			recipients=[recipient],
+			subject=subject,
+			message=message,
+			attachments=attachments,
+			reference_doctype="Event",
+			reference_name=event.name,
+			now=True,
+		)
+	else:
+		# For other channels, use the Notification's send method
+		# Temporarily inject our context into the doc for template rendering
+		for key, value in context.items():
+			if not hasattr(event, key):
+				event.set(key, value)
+
+		notification.send(event)
+
+
+def send_booking_notification(
+	event: "frappe.Document",
+	public_calendar: "frappe.Document",
+	recipient_email: str,
+	is_host: bool = False,
+) -> None:
+	"""
+	Send booking confirmation notification.
+
+	Args:
+	        event: The booked Event document
+	        public_calendar: The Public Calendar document
+	        recipient_email: Email address of the recipient
+	        is_host: True if recipient is the calendar's user (host)
+	"""
+	host, guests = get_host_and_guests(event, public_calendar)
+
+	if not host:
+		frappe.log_error(
+			f"Could not identify host for event {event.name}",
+			"Public Calendar Notification Error",
+		)
+		return
+
+	context = _build_notification_context(event, public_calendar, host, guests, recipient_email)
+
+	# Get appropriate notification
+	notification_field = "host_booking_notification" if is_host else "guest_booking_notification"
+	notification_name = (
+		public_calendar.get(notification_field) or "Public Calendar - Booking Confirmation"
 	)
+
+	# Generate ICS attachment for email notifications
+	attachments = [_get_ics_attachment_for_email(event, host, guests, "REQUEST", 0)]
+
+	_send_notification(notification_name, event, context, attachments)
+
+
+def send_cancellation_notification(
+	event: "frappe.Document",
+	public_calendar: "frappe.Document",
+	recipient_email: str,
+	cancelled_by: str,
+) -> None:
+	"""Send cancellation notification."""
+	host, guests = get_host_and_guests(event, public_calendar)
+
+	if not host:
+		return
+
+	context = _build_notification_context(event, public_calendar, host, guests, recipient_email)
+	context["cancelled_by"] = cancelled_by
+
+	notification_name = (
+		public_calendar.get("cancellation_notification") or "Public Calendar - Cancellation"
+	)
+
+	# Generate cancellation ICS
+	attachments = [_get_ics_attachment_for_email(event, host, guests, "CANCEL", 1)]
+
+	_send_notification(notification_name, event, context, attachments)
+
+
+def send_reschedule_notification(
+	event: "frappe.Document",
+	public_calendar: "frappe.Document",
+	recipient_email: str,
+	rescheduled_by: str,
+) -> None:
+	"""Send reschedule notification with updated ICS attachment."""
+	host, guests = get_host_and_guests(event, public_calendar)
+
+	if not host:
+		return
+
+	context = _build_notification_context(event, public_calendar, host, guests, recipient_email)
+	context["rescheduled_by"] = rescheduled_by
+
+	notification_name = (
+		public_calendar.get("reschedule_notification") or "Public Calendar - Reschedule"
+	)
+
+	# Generate updated ICS (sequence 1 for update)
+	attachments = [_get_ics_attachment_for_email(event, host, guests, "REQUEST", 1)]
+
+	_send_notification(notification_name, event, context, attachments)
+
+
+def send_reminder(
+	event: "frappe.Document",
+	public_calendar: "frappe.Document",
+	recipient_email: str,
+) -> None:
+	"""Send reminder notification for upcoming appointment."""
+	host, guests = get_host_and_guests(event, public_calendar)
+
+	if not host:
+		return
+
+	context = _build_notification_context(event, public_calendar, host, guests, recipient_email)
+
+	notification_name = public_calendar.get("reminder_notification") or "Public Calendar - Reminder"
+
+	_send_notification(notification_name, event, context, attachments=None)
 
 
 def notify_booking(event: "frappe.Document", public_calendar: "frappe.Document") -> None:
@@ -413,8 +375,7 @@ def notify_booking(event: "frappe.Document", public_calendar: "frappe.Document")
 		send_booking_notification(
 			event=event,
 			public_calendar=public_calendar,
-			recipient=host["email"],
-			recipient_name=host["full_name"],
+			recipient_email=host["email"],
 			is_host=True,
 		)
 
@@ -423,8 +384,7 @@ def notify_booking(event: "frappe.Document", public_calendar: "frappe.Document")
 			send_booking_notification(
 				event=event,
 				public_calendar=public_calendar,
-				recipient=guest["email"],
-				recipient_name=guest["full_name"],
+				recipient_email=guest["email"],
 				is_host=False,
 			)
 
@@ -452,6 +412,28 @@ def notify_cancellation(
 			send_cancellation_notification(event, public_calendar, guest["email"], cancelled_by)
 
 
+def notify_reschedule(
+	event: "frappe.Document",
+	public_calendar: "frappe.Document",
+	rescheduled_by: str,
+) -> None:
+	"""Send reschedule notifications to affected participants."""
+	host, guests = get_host_and_guests(event, public_calendar)
+
+	if not host:
+		return
+
+	# Notify host if they didn't initiate the change
+	if public_calendar.notify_host_on_booking and rescheduled_by != host["email"]:
+		send_reschedule_notification(event, public_calendar, host["email"], rescheduled_by)
+
+	# Notify guests if enabled
+	if public_calendar.notify_guest_on_booking:
+		for guest in guests:
+			if rescheduled_by != guest["email"]:
+				send_reschedule_notification(event, public_calendar, guest["email"], rescheduled_by)
+
+
 # Jinja template methods (exposed via hooks.py)
 def rsvp_confirm_url(event_name: str, email: str) -> str:
 	"""Generate confirm RSVP URL. For use in Jinja templates."""
@@ -474,10 +456,10 @@ def rsvp_cancel_url(event_name: str, email: str) -> str:
 
 def send_appointment_reminders():
 	"""
-	Send reminder emails for upcoming appointments.
+	Send reminder notifications for upcoming appointments.
 
 	Runs hourly. Finds events starting within the reminder window
-	that haven't had reminders sent yet (checked via Comment).
+	that haven't had reminders sent yet (tracked via Comment).
 	"""
 	# Get all calendars with reminders enabled
 	calendars = frappe.get_all(
@@ -498,7 +480,6 @@ def send_appointment_reminders():
 		reminder_minutes = cal.reminder_minutes_before or 60
 
 		# Find events starting between now and now + reminder_minutes
-		# that are linked to this calendar via ref_type/ref_name
 		window_start = now
 		window_end = add_to_date(now, minutes=reminder_minutes)
 

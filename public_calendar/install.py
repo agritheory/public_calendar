@@ -9,17 +9,20 @@ import frappe
 
 
 def after_install():
-	"""Create default email templates after app installation."""
-	create_default_email_templates()
+	"""Create default notifications after app installation."""
+	create_default_notifications()
 
 
-def create_default_email_templates():
-	"""Create default email templates for notifications."""
-	templates = [
+def create_default_notifications():
+	"""Create default Notification records for Public Calendar events."""
+	notifications = [
 		{
 			"name": "Public Calendar - Booking Confirmation",
 			"subject": "Appointment Confirmed: {{ subject }}",
-			"response": """<p>Hello,</p>
+			"document_type": "Event",
+			"event": "Custom",
+			"channel": "Email",
+			"message": """<p>Hello,</p>
 
 <p>Your appointment has been confirmed:</p>
 
@@ -61,7 +64,10 @@ def create_default_email_templates():
 		{
 			"name": "Public Calendar - Cancellation",
 			"subject": "Appointment Cancelled: {{ subject }}",
-			"response": """<p>Hello,</p>
+			"document_type": "Event",
+			"event": "Custom",
+			"channel": "Email",
+			"message": """<p>Hello,</p>
 
 <p>The following appointment has been cancelled:</p>
 
@@ -92,7 +98,10 @@ def create_default_email_templates():
 		{
 			"name": "Public Calendar - Reschedule",
 			"subject": "Appointment Rescheduled: {{ subject }}",
-			"response": """<p>Hello,</p>
+			"document_type": "Event",
+			"event": "Custom",
+			"channel": "Email",
+			"message": """<p>Hello,</p>
 
 <p>The following appointment has been rescheduled:</p>
 
@@ -138,7 +147,10 @@ def create_default_email_templates():
 		{
 			"name": "Public Calendar - Reminder",
 			"subject": "Reminder: {{ subject }} starting soon",
-			"response": """<p>Hello,</p>
+			"document_type": "Event",
+			"event": "Custom",
+			"channel": "Email",
+			"message": """<p>Hello,</p>
 
 <p>This is a reminder that your appointment is starting soon:</p>
 
@@ -173,15 +185,14 @@ def create_default_email_templates():
 		},
 	]
 
-	for template_data in templates:
-		if not frappe.db.exists("Email Template", template_data["name"]):
+	for notification_data in notifications:
+		if not frappe.db.exists("Notification", notification_data["name"]):
 			doc = frappe.get_doc(
 				{
-					"doctype": "Email Template",
-					"name": template_data["name"],
-					"subject": template_data["subject"],
-					"response": template_data["response"],
-					"owner": "Administrator",
+					"doctype": "Notification",
+					"enabled": 1,
+					"is_standard": 0,
+					**notification_data,
 				}
 			)
 			doc.insert(ignore_permissions=True)

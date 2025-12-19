@@ -359,3 +359,44 @@ employees = [
 		],
 	},
 ]
+
+holidays = [
+	{
+		"from_date": "2024-01-01",
+		"holiday_list_name": "2024 - United States",
+		"country": "United States",
+		"holidays": [
+			{"description": "New Year's Day", "holiday_date": "2024-01-01"},
+			{"description": "Birthday of Martin Luther King, Jr.", "holiday_date": "2024-01-15"},
+			{"description": "Washington's Birthday", "holiday_date": "2024-02-19"},
+			{"description": "Memorial Day", "holiday_date": "2024-05-27"},
+			{"description": "Juneteenth National Independence Day", "holiday_date": "2024-06-19"},
+			{"description": "Independence Day", "holiday_date": "2024-07-04"},
+			{"description": "Labor Day", "holiday_date": "2024-09-02"},
+			{"description": "Columbus Day", "holiday_date": "2024-10-14"},
+			{"description": "Veterans Day", "holiday_date": "2024-11-11"},
+			{"description": "Thanksgiving Day", "holiday_date": "2024-11-28"},
+			{"description": "Christmas Day", "holiday_date": "2024-12-25"},
+		],
+		"to_date": "2024-12-31",
+	},
+	{
+		"from_date": "2025-01-01",
+		"holiday_list_name": "2025 - United States",
+		"country": "United States",
+		"holidays": [
+			{"description": "New Year's Day", "holiday_date": "2025-01-01"},
+			{"description": "Birthday of Martin Luther King, Jr.", "holiday_date": "2025-01-20"},
+			{"description": "Washington's Birthday", "holiday_date": "2025-02-17"},
+			{"description": "Memorial Day", "holiday_date": "2025-05-26"},
+			{"description": "Juneteenth National Independence Day", "holiday_date": "2025-06-19"},
+			{"description": "Independence Day", "holiday_date": "2025-07-04"},
+			{"description": "Labor Day", "holiday_date": "2025-09-01"},
+			{"description": "Columbus Day", "holiday_date": "2025-10-13"},
+			{"description": "Veterans Day", "holiday_date": "2025-11-11"},
+			{"description": "Thanksgiving Day", "holiday_date": "2025-11-27"},
+			{"description": "Christmas Day", "holiday_date": "2025-12-25"},
+		],
+		"to_date": "2025-12-31",
+	},
+]

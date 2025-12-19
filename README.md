@@ -3,7 +3,7 @@ For license information, please see license.txt-->
 
 ## Public Calendar
 
-An application with electronic payments utilities for ERPNext.
+An application with public calendar and self-service scheduling utilities for Frappe
 
 ### Installation Guide
 

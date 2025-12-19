@@ -10,10 +10,9 @@ Handles notifications when events are modified or cancelled from the Frappe desk
 import frappe
 
 from public_calendar.public_calendar.notifications import (
-	get_host_and_guests,
 	get_public_calendar_for_event,
 	notify_cancellation,
-	send_reschedule_notification,
+	notify_reschedule,
 )
 
 
@@ -45,26 +44,10 @@ def _handle_cancellation(doc, public_calendar):
 		return
 
 	cancelled_by_email = frappe.db.get_value("User", frappe.session.user, "email")
-
 	notify_cancellation(doc, public_calendar, cancelled_by_email)
 
 
 def _handle_reschedule(doc, public_calendar):
 	"""Send reschedule notifications."""
-	host, guests = get_host_and_guests(doc, public_calendar)
-	print(host)
-	if not host:
-		return
-
-	# Notify all participants about the reschedule
 	rescheduled_by_email = frappe.db.get_value("User", frappe.session.user, "email")
-	print(rescheduled_by_email)
-	# Notify host if they didn't initiate the change
-	if public_calendar.notify_host_on_booking and rescheduled_by_email != host["email"]:
-		send_reschedule_notification(doc, public_calendar, host["email"], rescheduled_by_email)
-
-	# Notify guests if host initiated the change
-	if public_calendar.notify_guest_on_booking:
-		for guest in guests:
-			if rescheduled_by_email != guest["email"]:
-				send_reschedule_notification(doc, public_calendar, guest["email"], rescheduled_by_email)
+	notify_reschedule(doc, public_calendar, rescheduled_by_email)

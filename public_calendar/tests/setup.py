@@ -7,7 +7,7 @@ import frappe
 from erpnext.setup.utils import enable_all_roles_and_domains, set_defaults_for_tests
 from frappe.desk.page.setup_wizard.setup_wizard import setup_complete
 
-from public_calendar.tests.fixtures import employees
+from public_calendar.tests.fixtures import employees, holidays
 
 
 def before_test():
@@ -93,3 +93,10 @@ def create_employees(settings, only_create=None):
 		if employee.get("reports_to"):
 			empl.reports_to = frappe.get_value("Employee", {"employee_name": employee.get("reports_to")})
 		empl.save()
+
+
+def add_holiday_lists():
+	for holiday_list in holidays:
+		hl = frappe.new_doc("Holiday List")
+		hl.update(holiday_list)
+		hl.save()

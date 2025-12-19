@@ -34,7 +34,9 @@
 {% block script %}
 {% if calendar %}
 <script>
-	frappe.require('assets/public_calendar/js/public_calendar.bundle.js');
+	frappe.require('assets/public_calendar/js/public_calendar.bundle.js').then(() => {
+		public_calendar.init()
+	})
 </script>
 {% endif %}
 {% endblock %}

@@ -114,7 +114,6 @@ function update_block(frm, day, index, start, end) {
 	const hours = get_working_hours(frm)
 	if (!hours[day]) hours[day] = []
 	hours[day][index] = { start, end }
-	hours[day].sort((a, b) => a.start.localeCompare(b.start))
 	set_working_hours(frm, hours)
 }
 

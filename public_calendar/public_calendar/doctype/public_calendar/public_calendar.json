@@ -1,6 +1,7 @@
 {
 	"actions": [],
 	"allow_rename": 1,
+	"autoname": "field:route",
 	"creation": "2025-12-10 14:55:59.590645",
 	"doctype": "DocType",
 	"engine": "InnoDB",
@@ -34,12 +35,12 @@
 		"send_reminder",
 		"reminder_minutes_before",
 		"templates_section",
-		"host_booking_template",
-		"booker_booking_template",
-		"reschedule_template",
+		"host_booking_notification",
+		"booker_booking_notification",
+		"reschedule_notification",
 		"column_break_hzvc",
-		"cancellation_template",
-		"reminder_template"
+		"cancellation_notification",
+		"reminder_notification"
 	],
 	"fields": [
 		{
@@ -81,7 +82,8 @@
 			"fieldtype": "Data",
 			"in_list_view": 1,
 			"label": "Route",
-			"reqd": 1
+			"reqd": 1,
+			"unique": 1
 		},
 		{
 			"default": "0",
@@ -181,37 +183,13 @@
 			"label": "Templates"
 		},
 		{
-			"fieldname": "booker_booking_template",
-			"fieldtype": "Link",
-			"label": "Booker Booking Template",
-			"options": "Email Template"
-		},
-		{
 			"fieldname": "column_break_hzvc",
 			"fieldtype": "Column Break"
-		},
-		{
-			"fieldname": "cancellation_template",
-			"fieldtype": "Link",
-			"label": "Cancellation Template",
-			"options": "Email Template"
-		},
-		{
-			"fieldname": "reminder_template",
-			"fieldtype": "Link",
-			"label": "Reminder Template",
-			"options": "Email Template"
 		},
 		{
 			"fieldname": "configuration_tab",
 			"fieldtype": "Tab Break",
 			"label": "Configuration"
-		},
-		{
-			"fieldname": "host_booking_template",
-			"fieldtype": "Link",
-			"label": "Host Booking Template",
-			"options": "Email Template"
 		},
 		{
 			"default": "0",
@@ -226,19 +204,44 @@
 			"label": "Notify Guest on Booking"
 		},
 		{
-			"fieldname": "reschedule_template",
+			"fieldname": "host_booking_notification",
 			"fieldtype": "Link",
-			"label": "Reschedule Template",
-			"options": "Email Template"
+			"label": "Host Booking Notification",
+			"options": "Notification"
+		},
+		{
+			"fieldname": "booker_booking_notification",
+			"fieldtype": "Link",
+			"label": "Booker Booking Notification",
+			"options": "Notification"
+		},
+		{
+			"fieldname": "reschedule_notification",
+			"fieldtype": "Link",
+			"label": "Reschedule Notification",
+			"options": "Notification"
+		},
+		{
+			"fieldname": "cancellation_notification",
+			"fieldtype": "Link",
+			"label": "Cancellation Notification",
+			"options": "Notification"
+		},
+		{
+			"fieldname": "reminder_notification",
+			"fieldtype": "Link",
+			"label": "Reminder Notification",
+			"options": "Notification"
 		}
 	],
 	"grid_page_length": 50,
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2025-12-11 12:14:12.437342",
+	"modified": "2025-12-19 14:28:32.807897",
 	"modified_by": "Administrator",
 	"module": "Public Calendar",
 	"name": "Public Calendar",
+	"naming_rule": "By fieldname",
 	"owner": "Administrator",
 	"permissions": [
 		{
